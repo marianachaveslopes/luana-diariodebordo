@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Diário de Bordo — Luana Nogueira</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFFFFF;--bg2:#F5F0EA;--bg3:#FAF7F2;
+  --text:#1A1A1A;--text2:#555;--text3:#888;
+  --border:#E0D8CF;--border2:#C8BFB5;
+  --terracotta:#B85042;--caramel:#C8874A;
+  --petrol:#1B6B72;--turquoise:#2ABBB0;
+  --radius:10px;--radius-sm:7px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1A1A1A;--bg2:#242424;--bg3:#1F1F1F;
+    --text:#F0EBE3;--text2:#A89E94;--text3:#6B6560;
+    --border:#333;--border2:#444;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+
+.app{max-width:520px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+
+.header{padding:1.25rem 1.25rem 0.9rem;border-bottom:0.5px solid var(--border);background:var(--bg)}
+.header-top{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+.brand{font-size:9px;font-weight:600;color:var(--caramel);letter-spacing:3px;text-transform:uppercase}
+.header h1{font-size:21px;font-weight:600;color:var(--text)}
+.header p{font-size:12px;color:var(--text3);margin-top:2px}
+
+.tabs{display:flex;background:var(--bg);border-bottom:0.5px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{flex:1;min-width:80px;padding:11px 8px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;white-space:nowrap;text-align:center}
+.tab.active{color:var(--terracotta);border-bottom-color:var(--terracotta)}
+
+.content{flex:1;overflow-y:auto;padding:1.1rem 1.1rem 5rem}
+
+.day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:6px;margin-bottom:1.25rem}
+.phase-sep{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:0.85rem 0 0.4rem;grid-column:1/-1}
+.day-btn{padding:8px 5px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.day-btn.active{background:var(--terracotta);border-color:var(--terracotta)}
+.day-btn .dn{font-size:9px;color:var(--text3);display:block;margin-bottom:1px}
+.day-btn .dd{font-size:11px;font-weight:600;color:var(--text);display:block}
+.day-btn.active .dn,.day-btn.active .dd{color:#fff}
+.day-btn .dot{width:4px;height:4px;border-radius:50%;background:var(--turquoise);margin:3px auto 0;display:none}
+.day-btn.has-entry .dot{display:block}
+.day-btn.active .dot{background:rgba(255,255,255,0.55)}
+
+.entry-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;gap:8px;flex-wrap:wrap}
+.entry-date{font-size:17px;font-weight:600;color:var(--text)}
+.entry-chip{font-size:11px;padding:4px 11px;border-radius:100px;font-weight:500}
+
+.sec-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin:1.1rem 0 0.75rem;padding-top:1rem;border-top:0.5px solid var(--border)}
+.sec-label:first-of-type{border-top:none;padding-top:0;margin-top:0}
+
+.field{margin-bottom:0.9rem}
+.field-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.field-label i{font-size:15px;color:var(--caramel)}
+.field-hint{font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.5}
+textarea,input[type="text"]{width:100%;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;-webkit-appearance:none}
+textarea:focus,input:focus{outline:none;border-color:var(--turquoise)}
+textarea{min-height:80px}
+
+.mood-row{display:flex;gap:6px;flex-wrap:wrap}
+.mood-btn{padding:6px 12px;border:0.5px solid var(--border);border-radius:100px;background:var(--bg);cursor:pointer;font-size:12px;color:var(--text2);-webkit-tap-highlight-color:transparent}
+.mood-btn.sel{background:#C8874A20;border-color:var(--caramel);color:var(--caramel);font-weight:600}
+
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.comp-btn{padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-size:12px;color:var(--text2);text-align:left;-webkit-tap-highlight-color:transparent}
+.comp-btn.sel{background:#1B6B7215;border-color:var(--petrol);color:var(--petrol);font-weight:600}
+
+.save-bar{display:flex;align-items:center;justify-content:space-between;margin-top:1.1rem;padding-top:0.9rem;border-top:0.5px solid var(--border)}
+.save-btn{padding:9px 20px;background:var(--terracotta);border:none;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.save-status{font-size:11px;color:var(--text3)}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.stat-card{background:var(--bg2);border-radius:var(--radius-sm);padding:12px 8px;text-align:center}
+.stat-num{font-size:22px;font-weight:600;color:var(--text)}
+.stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.3}
+
+.tl{display:flex;flex-direction:column;gap:10px}
+.tl-item{display:flex;gap:10px}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.tl-body{flex:1}
+.tl-meta{font-size:10px;color:var(--text3);font-weight:600;margin-bottom:2px}
+.tl-text{font-size:12px;color:var(--text);line-height:1.5}
+.tl-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.tl-tag{font-size:10px;padding:2px 7px;border-radius:100px;background:#1B6B7215;color:var(--petrol)}
+
+.comp-map{display:flex;flex-direction:column;gap:7px}
+.comp-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:var(--radius-sm)}
+.comp-name{font-size:13px;font-weight:500;color:var(--text)}
+.comp-right{display:flex;align-items:center;gap:8px}
+.comp-bar-wrap{width:60px;height:4px;background:var(--border);border-radius:3px;overflow:hidden}
+.comp-bar{height:100%;background:var(--turquoise);border-radius:3px}
+.comp-count{font-size:11px;color:var(--text3);min-width:20px;text-align:right}
+
+.empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;line-height:1.6}
+.ref-section{display:flex;flex-direction:column;gap:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div class="header-top">
+    <svg width="26" height="18" viewBox="0 0 40 28" fill="none" aria-hidden="true">
+      <path d="M2 14 C8 6,16 4,20 8 C24 4,32 6,38 14" stroke="#C8874A" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M14 10 C16 14,20 15,24 14" stroke="#B85042" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="brand">Welcome Abroad</span>
+  </div>
+  <h1>Diário de Bordo</h1>
+  <p>Luana Nogueira · Jun–Jul 2026 · Europa</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('diary')" id="tab-diary">Entradas</button>
+  <button class="tab" onclick="showTab('overview')" id="tab-overview">Visão geral</button>
+  <button class="tab" onclick="showTab('competences')" id="tab-competences">Competências</button>
+  <button class="tab" onclick="showTab('closing')" id="tab-closing">Fechamento</button>
+</div>
+
+<div class="content">
+
+  <div id="tab-content-diary">
+    <div class="day-grid" id="dayGrid"></div>
+    <div id="entryArea"></div>
+  </div>
+
+  <div id="tab-content-overview" style="display:none">
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num" id="st-days">0</div><div class="stat-lbl">dias escritos</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-mood">—</div><div class="stat-lbl">sentimento mais frequente</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-comp">—</div><div class="stat-lbl">competência em destaque</div></div>
+    </div>
+    <div class="tl" id="timeline"><div class="empty">Nenhuma entrada ainda.<br>Começa a escrever!</div></div>
+  </div>
+
+  <div id="tab-content-competences" style="display:none">
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1.1rem;line-height:1.6">Cada vez que você marca uma competência no diário, ela aparece aqui. Este é o seu mapa de crescimento real — construído dia a dia.</p>
+    <div class="comp-map" id="compMap"><div class="empty">Ainda sem dados.<br>Escreve suas primeiras entradas!</div></div>
+  </div>
+
+  <div id="tab-content-closing" style="display:none">
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1.25rem;line-height:1.6">Para preencher ao final da viagem. Cada resposta é uma parte da sua narrativa profissional.</p>
+    <div class="ref-section">
+      <div class="field">
+        <div class="field-label"><i class="ti ti-heart"></i> O que senti que nunca havia sentido antes</div>
+        <div class="field-hint">Não precisa ser algo grande. Pode ser uma sensação, uma percepção, um momento quieto.</div>
+        <textarea id="cl-feeling" placeholder="Escreve aqui..." rows="3" oninput="saveClosing()"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-bulb"></i> O maior aprendizado — sobre mim</div>
+        <div class="field-hint">O que essa experiência revelou sobre quem você é?</div>
+        <textarea id="cl-self" placeholder="Descobri que eu..." rows="3" oninput="saveClosing()"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-world"></i> O maior aprendizado — sobre o mundo</div>
+        <div class="field-hint">O que você viu que mudou como você enxerga as Relações Internacionais?</div>
+        <textarea id="cl-world" placeholder="Percebi que o mundo..." rows="3" oninput="saveClosing()"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-road"></i> Que área das Relações Internacionais mais conversa comigo agora?</div>
+        <div class="field-hint">Como essa resposta mudou desde o início da viagem?</div>
+        <textarea id="cl-area" placeholder="Antes eu achava que... Agora percebo que..." rows="3" oninput="saveClosing()"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-shield"></i> Que medo atravessei?</div>
+        <textarea id="cl-fear" placeholder="Eu tinha medo de... e o que aconteceu foi..." rows="2" oninput="saveClosing()"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-user-check"></i> A profissional que estou começando a construir</div>
+        <div class="field-hint">Como você se descreveria hoje para uma oportunidade internacional?</div>
+        <textarea id="cl-professional" placeholder="Sou uma profissional que..." rows="3" oninput="saveClosing()"></textarea>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-quote"></i> Uma frase que resume tudo</div>
+        <input type="text" id="cl-phrase" placeholder="A frase da minha viagem..." oninput="saveClosing()">
+      </div>
+    </div>
+    <div class="save-bar">
+      <span class="save-status" id="cl-status"></span>
+      <button class="save-btn" onclick="saveClosing(true)">Salvar fechamento</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const MOODS=["Animada","Curiosa","Grata","Reflexiva","Cansada","Insegura","Surpreendida","Saudosa","Corajosa","Emocionada"];
+const COMPS=["Autonomia","Adaptação cultural","Comunicação intercultural","Resolução de problemas","Proatividade","Observação crítica","Networking","Tolerância à ambiguidade","Autoconhecimento","Planejamento","Liderança pessoal","Repertório global"];
+const PC={pre:"#C8874A",veneza:"#1B6B72",londres:"#B85042",escocia:"#2ABBB0",lisboa:"#6B5CA5",chegada:"#3B7A3B"};
+
+const DAYS=[
+  {date:"26 Jun",name:"Sex",phase:"pre",label:"Véspera da partida"},
+  {date:"27 Jun",name:"Sáb",phase:"veneza",label:"Veneza"},
+  {date:"28 Jun",name:"Dom",phase:"veneza",label:"Veneza"},
+  {date:"29 Jun",name:"Seg",phase:"veneza",label:"VIU — 1º dia"},
+  {date:"30 Jun",name:"Ter",phase:"veneza",label:"VIU"},
+  {date:"1 Jul",name:"Qua",phase:"veneza",label:"VIU"},
+  {date:"2 Jul",name:"Qui",phase:"veneza",label:"VIU"},
+  {date:"3 Jul",name:"Sex",phase:"veneza",label:"VIU — último dia"},
+  {date:"4 Jul",name:"Sáb",phase:"londres",label:"Londres — chegada"},
+  {date:"5 Jul",name:"Dom",phase:"londres",label:"Londres"},
+  {date:"6 Jul",name:"Seg",phase:"londres",label:"King's College"},
+  {date:"7 Jul",name:"Ter",phase:"londres",label:"Londres"},
+  {date:"8 Jul",name:"Qua",phase:"londres",label:"Londres"},
+  {date:"9 Jul",name:"Qui",phase:"londres",label:"Londres"},
+  {date:"10 Jul",name:"Sex",phase:"londres",label:"Londres"},
+  {date:"11 Jul",name:"Sáb",phase:"londres",label:"Londres"},
+  {date:"12 Jul",name:"Dom",phase:"londres",label:"Londres"},
+  {date:"13 Jul",name:"Seg",phase:"londres",label:"Londres"},
+  {date:"14 Jul",name:"Ter",phase:"londres",label:"Londres"},
+  {date:"15 Jul",name:"Qua",phase:"londres",label:"Londres"},
+  {date:"16 Jul",name:"Qui",phase:"londres",label:"Londres"},
+  {date:"17 Jul",name:"Sex",phase:"londres",label:"Londres"},
+  {date:"18 Jul",name:"Sáb",phase:"escocia",label:"Escócia"},
+  {date:"19 Jul",name:"Dom",phase:"escocia",label:"Escócia — volta"},
+  {date:"20 Jul",name:"Seg",phase:"londres",label:"Londres"},
+  {date:"21 Jul",name:"Ter",phase:"londres",label:"Londres"},
+  {date:"22 Jul",name:"Qua",phase:"londres",label:"Londres"},
+  {date:"23 Jul",name:"Qui",phase:"londres",label:"Londres"},
+  {date:"24 Jul",name:"Sex",phase:"londres",label:"Londres"},
+  {date:"25 Jul",name:"Sáb",phase:"lisboa",label:"Lisboa"},
+  {date:"26 Jul",name:"Dom",phase:"lisboa",label:"Lisboa"},
+  {date:"27 Jul",name:"Seg",phase:"lisboa",label:"Lisboa"},
+  {date:"28 Jul",name:"Ter",phase:"lisboa",label:"Lisboa"},
+  {date:"29 Jul",name:"Qua",phase:"lisboa",label:"Lisboa"},
+  {date:"30 Jul",name:"Qui",phase:"chegada",label:"De volta!"},
+];
+
+const QS={
+  pre:{
+    q1:{label:"Como estou chegando nesse momento?",hint:"Conta sobre a energia, a emoção que está sentindo. Ansiedade, animação, medo — tudo vale.",icon:"ti-heart"},
+    q2:{label:"O que mais me move nessa viagem?",hint:"Por que isso importa para você de verdade? O que você está buscando além do currículo?",icon:"ti-flame"},
+    q3:{label:"O que ainda me assusta?",hint:"Nomear o medo é o primeiro passo para atravessá-lo.",icon:"ti-cloud-storm"},
+    q4:{label:"Que profissional quero ser ao voltar?",hint:"Não precisa ser definitivo. Uma intuição, uma imagem, uma palavra.",icon:"ti-user"},
+  },
+  default:{
+    q1:{label:"O que vivi hoje que me tocou de verdade?",hint:"Um lugar, uma conversa, uma percepção — o que ficou?",icon:"ti-sun"},
+    q2:{label:"O que senti — e o que isso diz sobre mim?",hint:"Tente ir além do fato. O que a emoção revela sobre seus valores, seus medos, seus desejos?",icon:"ti-heart"},
+    q3:{label:"O que resolvi sozinha hoje?",hint:"Pequeno ou grande, não importa. Autonomia se constrói em situações cotidianas.",icon:"ti-bolt"},
+    q4:{label:"O que essa experiência está me ensinando sobre o mundo e sobre Relações Internacionais?",hint:"Como o que você viveu hoje conecta com o que você estuda ou quer fazer?",icon:"ti-world"},
+  }
+};
+
+function k(i){return"lu26_day_"+i}
+function rk(f){return"lu26_refl_"+f}
+function ld(i){try{return JSON.parse(localStorage.getItem(k(i))||"null")}catch(e){return null}}
+function sv(i,d){try{localStorage.setItem(k(i),JSON.stringify(d))}catch(e){}}
+
+let cur=null;
+
+function buildGrid(){
+  const g=document.getElementById("dayGrid");
+  if(!g)return;
+  g.innerHTML="";
+  const labels={pre:"Antes da partida",veneza:"Veneza",londres:"Londres",escocia:"Escócia",lisboa:"Lisboa",chegada:"Chegada"};
+  let lastPhase=null;
+  DAYS.forEach((d,i)=>{
+    if(d.phase!==lastPhase){
+      const s=document.createElement("div");
+      s.className="phase-sep";
+      s.textContent=labels[d.phase]||d.phase;
+      g.appendChild(s);
+      lastPhase=d.phase;
+    }
+    const e=ld(i);
+    const btn=document.createElement("button");
+    btn.className="day-btn"+(e?" has-entry":"");
+    btn.id="db_"+i;
+    btn.innerHTML=`<span class="dn">${d.name}</span><span class="dd">${d.date}</span><div class="dot"></div>`;
+    btn.onclick=()=>openDay(i);
+    g.appendChild(btn);
+  });
+}
+
+function openDay(i){
+  if(cur!==null){const p=document.getElementById("db_"+cur);if(p)p.classList.remove("active");}
+  cur=i;
+  const b=document.getElementById("db_"+i);if(b)b.classList.add("active");
+  const d=DAYS[i];
+  const e=ld(i)||{q1:"",q2:"",q3:"",q4:"",phrase:"",mood:"",comps:[]};
+  const color=PC[d.phase]||"#888";
+  const qs=d.phase==="pre"?QS.pre:QS.default;
+  const area=document.getElementById("entryArea");
+  if(!area)return;
+
+  const compBtns=COMPS.map(c=>`<button class="comp-btn${(e.comps||[]).includes(c)?" sel":""}" onclick="toggleComp(${i},'${c.replace(/'/g,"\\'")}')">${c}</button>`).join("");
+
+  area.innerHTML=`
+    <div class="entry-header">
+      <div class="entry-date">${d.name}, ${d.date}</div>
+      <span class="entry-chip" style="background:${color}18;color:${color}">${d.label}</span>
+    </div>
+
+    <div class="sec-label">Como estou</div>
+    <div class="field">
+      <div class="field-label"><i class="ti ti-mood-smile"></i> O que estou sentindo</div>
+      <div class="mood-row" id="mood_${i}">
+        ${MOODS.map(m=>`<button class="mood-btn${e.mood===m?" sel":""}" onclick="selMood(${i},'${m}')">${m}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="sec-label">Reflexão do dia</div>
+
+    ${Object.entries(qs).map(([qk,q])=>`
+    <div class="field">
+      <div class="field-label"><i class="ti ${q.icon}"></i> ${q.label}</div>
+      <div class="field-hint">${q.hint}</div>
+      <textarea id="f_${qk}_${i}" placeholder="Escreve aqui..." oninput="autoSave(${i})">${e[qk]||""}</textarea>
+    </div>`).join("")}
+
+    <div class="sec-label">Competências que apareceram hoje</div>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Marca o que você exercitou ou percebeu hoje — mesmo que de forma pequena.</p>
+    <div class="comp-grid">${compBtns}</div>
+
+    <div class="sec-label">Palavra ou frase do dia</div>
+    <div class="field">
+      <div class="field-label"><i class="ti ti-quote"></i> Se hoje fosse uma frase</div>
+      <input type="text" id="f_phrase_${i}" placeholder="Uma palavra, uma frase que resume o dia..." value="${e.phrase||""}" oninput="autoSave(${i})">
+    </div>
+
+    <div class="save-bar">
+      <span class="save-status" id="st_${i}">Salvamento automático ativo</span>
+      <button class="save-btn" onclick="manualSave(${i})">Salvar entrada</button>
+    </div>
+  `;
+  area.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function selMood(i,m){
+  const c=document.getElementById("mood_"+i);
+  if(!c)return;
+  c.querySelectorAll(".mood-btn").forEach(b=>b.classList.toggle("sel",b.textContent.trim()===m));
+  autoSave(i);
+}
+
+function toggleComp(i,c){
+  document.querySelectorAll("#entryArea .comp-btn").forEach(b=>{
+    if(b.textContent.trim()===c)b.classList.toggle("sel");
+  });
+  autoSave(i);
+}
+
+function getFormData(i){
+  const mc=document.getElementById("mood_"+i);
+  const ms=mc?mc.querySelector(".mood-btn.sel"):null;
+  const comps=[];
+  document.querySelectorAll("#entryArea .comp-btn.sel").forEach(b=>comps.push(b.textContent.trim()));
+  return{
+    q1:(document.getElementById("f_q1_"+i)||{}).value||"",
+    q2:(document.getElementById("f_q2_"+i)||{}).value||"",
+    q3:(document.getElementById("f_q3_"+i)||{}).value||"",
+    q4:(document.getElementById("f_q4_"+i)||{}).value||"",
+    phrase:(document.getElementById("f_phrase_"+i)||{}).value||"",
+    mood:ms?ms.textContent.trim():"",
+    comps
+  };
+}
+
+let timers={};
+function autoSave(i){
+  clearTimeout(timers[i]);
+  timers[i]=setTimeout(()=>{
+    const d=getFormData(i);sv(i,d);
+    const has=d.q1||d.q2||d.q3||d.q4||d.mood||d.comps.length;
+    const b=document.getElementById("db_"+i);if(b)b.classList.toggle("has-entry",!!has);
+    const s=document.getElementById("st_"+i);if(s)s.textContent="Salvo automaticamente";
+  },700);
+}
+
+function manualSave(i){
+  const d=getFormData(i);sv(i,d);
+  const has=d.q1||d.q2||d.q3||d.q4||d.mood||d.comps.length;
+  const b=document.getElementById("db_"+i);if(b)b.classList.toggle("has-entry",!!has);
+  const s=document.getElementById("st_"+i);
+  if(s){s.textContent="Entrada salva!";setTimeout(()=>{if(s)s.textContent=""},2500);}
+}
+
+function updateOverview(){
+  let count=0,moods={},comps={};
+  const items=[];
+  DAYS.forEach((d,i)=>{
+    const e=ld(i);
+    if(e&&(e.q1||e.q2||e.mood)){
+      count++;
+      if(e.mood)moods[e.mood]=(moods[e.mood]||0)+1;
+      (e.comps||[]).forEach(c=>{comps[c]=(comps[c]||0)+1;});
+      items.push({d,e,i});
+    }
+  });
+  const sd=document.getElementById("st-days");if(sd)sd.textContent=count;
+  const tm=Object.entries(moods).sort((a,b)=>b[1]-a[1])[0];
+  const sm=document.getElementById("st-mood");if(sm)sm.textContent=tm?tm[0]:"—";
+  const tc=Object.entries(comps).sort((a,b)=>b[1]-a[1])[0];
+  const sc=document.getElementById("st-comp");if(sc)sc.textContent=tc?tc[0]:"—";
+  const tl=document.getElementById("timeline");
+  if(tl){
+    tl.innerHTML=items.length===0?'<div class="empty">Nenhuma entrada ainda.<br>Começa a escrever!</div>':
+    items.map(({d,e})=>{
+      const color=PC[d.phase]||"#888";
+      const preview=(e.q1||e.q2||"").substring(0,110);
+      const tags=(e.comps||[]).slice(0,3).map(c=>`<span class="tl-tag">${c}</span>`).join("");
+      return`<div class="tl-item"><div class="tl-dot" style="background:${color}"></div><div class="tl-body"><div class="tl-meta">${d.name}, ${d.date} · ${d.label}${e.mood?" · "+e.mood:""}</div><div class="tl-text">${preview}${(e.q1||e.q2||"").length>110?"…":""}</div>${tags?`<div class="tl-tags">${tags}</div>`:""}</div></div>`;
+    }).join("");
+  }
+}
+
+function updateComps(){
+  const comps={};
+  DAYS.forEach((_,i)=>{
+    const e=ld(i);
+    (e&&e.comps?e.comps:[]).forEach(c=>{comps[c]=(comps[c]||0)+1;});
+  });
+  const sorted=Object.entries(comps).sort((a,b)=>b[1]-a[1]);
+  const cm=document.getElementById("compMap");
+  if(!cm)return;
+  if(sorted.length===0){cm.innerHTML='<div class="empty">Ainda sem dados.<br>Escreve suas primeiras entradas!</div>';return;}
+  const max=sorted[0][1];
+  cm.innerHTML=sorted.map(([c,n])=>`
+    <div class="comp-row">
+      <div class="comp-name">${c}</div>
+      <div class="comp-right">
+        <div class="comp-bar-wrap"><div class="comp-bar" style="width:${Math.round(n/max*100)}%"></div></div>
+        <div class="comp-count">${n}x</div>
+      </div>
+    </div>`).join("");
+}
+
+function saveClosing(explicit){
+  ["feeling","self","world","area","fear","professional","phrase"].forEach(f=>{
+    const el=document.getElementById("cl-"+f);
+    if(el)try{localStorage.setItem(rk(f),el.value)}catch(e){}
+  });
+  const s=document.getElementById("cl-status");
+  if(s){s.textContent="Salvo";setTimeout(()=>{if(s)s.textContent=""},2000);}
+}
+
+function loadClosing(){
+  ["feeling","self","world","area","fear","professional","phrase"].forEach(f=>{
+    const el=document.getElementById("cl-"+f);
+    if(el)try{el.value=localStorage.getItem(rk(f))||""}catch(e){}
+  });
+}
+
+function showTab(name){
+  ["diary","overview","competences","closing"].forEach(t=>{
+    const c=document.getElementById("tab-content-"+t);
+    const b=document.getElementById("tab-"+t);
+    if(c)c.style.display=t===name?"block":"none";
+    if(b)b.classList.toggle("active",t===name);
+  });
+  if(name==="overview")updateOverview();
+  if(name==="competences")updateComps();
+  if(name==="closing")loadClosing();
+}
+
+buildGrid();
+openDay(0);
+</script>
+</body>
+</html>
